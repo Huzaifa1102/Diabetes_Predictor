@@ -1,0 +1,214 @@
+<!DOCTYPE html SYSTEM "about:legacy-compat">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr-FR" xml:lang="fr-FR"><head><meta charset="UTF-8"/><title>Connexion - Dépôt</title><script>
+  				window.knownNavCompat = [
+						{name: "Brave", url: "https://brave.com"},
+						{name: "Chrome", url: "https://www.google.fr/chrome"},
+						{name: "Chromium (distributions Linux uniquement)"},
+						{name: "Edge", url: "https://www.microsoft.com/edge"},
+						{name: "Opera", url: "https://www.opera.com"},
+						{name: "Vivaldi", url: "https://vivaldi.com"}
+					];
+
+					function badNavigator() {
+						let root = document.getElementById("loading");
+						root.innerHTML = "";
+						if(/iPhone|iPod|iPad/.test(navigator.platform)){
+							root.appendChild(document.createElement("p")).innerHTML = "Les appareils mobiles utilisant iOS sont actuellement incompatibles.";
+							root.appendChild(document.createElement("p")).innerHTML = "Veuillez utiliser un appareil sous un autre système d&apos;exploitation.";
+						} else{
+							root.appendChild(document.createElement("p")).innerHTML = "Ce navigateur ne semble pas compatible.";
+							try{
+								root.appendChild(document.createElement("p")).innerHTML = "Veuillez utiliser la dernière version des navigateurs suivants :";
+								let ul = root.appendChild(document.createElement("ul"));
+								ul.setAttribute("style", "text-align:start");
+								for (let ii = 0; ii &lt; window.knownNavCompat.length; ii++) {
+									if(window.knownNavCompat[ii].url) {
+										let a = ul.appendChild(document.createElement("li")).appendChild(document.createElement("a"));
+										a.innerHTML = window.knownNavCompat[ii].name;
+										a.setAttribute("target", "_blank");
+										a.setAttribute("href", window.knownNavCompat[ii].url);
+									}else
+										ul.appendChild(document.createElement("li")).innerHTML = window.knownNavCompat[ii].name;
+								}
+							}catch(e){
+								root.appendChild(document.createElement("p")).innerHTML = "Veuillez utiliser un navigateur plus récent.";
+							}
+						}
+					}
+
+					function showError(e) {
+						document.getElementById('loading').firstElementChild.textContent = "Une anomalie ne permet pas d&apos;accéder à ce service.";
+					}
+</script><link rel="stylesheet" type="text/css" href="https://scenari.cesi.fr/~~static/scCore/fr-FR/-wsk/6.4.5.202602180959/core/themes/light-bluegrey.css"/><style>
+body {
+	color: var(--color);
+	background-color: var(--bgcolor);
+}
+
+body &gt; section{
+    max-width: 50em;
+    padding: 1rem;
+    max-width: 40rem;
+    margin: 1rem auto;
+    box-sizing: border-box;
+ }
+</style><script type="importmap">{"imports":{"/@lib@/":"https://scenari.cesi.fr/~~static/scCore/fr-FR/-wlb/6.4.5.202602180959/","/@skin@/":"https://scenari.cesi.fr/~~static/scCore/fr-FR/-wsk/6.4.5.202602180959/","/@back@/":"https://scenari.cesi.fr/~~static/scCore/fr-FR/-wbk/6.4.5.202602180959/","/@res@/":"https://scenari.cesi.fr/~~static/scCore/fr-FR/-wre/6.4.5.202602180959/","/@boot@/":"https://scenari.cesi.fr/~~static/scCore/zxx/","/@front@/":"/"}}</script><style>
+body {
+	font-family: sans-serif;
+	text-align: center;
+	direction : ltr;
+}
+
+.fields {
+	width: 30em;
+	margin: auto;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	grid-row-gap: 0.5em;
+	grid-column-gap: 0.5em;
+}
+
+h3{
+	color: var(--alt1-color);
+  font-variant: small-caps;
+}
+
+label {
+	text-align: end;
+}
+
+.message {
+	margin: 1em;
+}
+
+.error {
+	color: red;
+	margin: 1em;
+}
+
+.footer {
+	display: flex;
+	justify-content: space-around;
+	margin: 1em;
+}
+
+form.ok button[type = submit] {
+	color: green;
+}
+</style></head><body><main id="loading" style="text-align: center; position: absolute; width: 100vw; height: 100vh;font-family: sans-serif;"><p>Chargement...</p></main><script defer="defer">
+					if (!window.customElements || !HTMLElement.prototype.attachShadow || !window.requestIdleCallback) {
+
+								// Fallback framework Web pour compat anciens navigateurs
+                window.location.href = "login.xhtml" + window.location.search;
+
+					}else{
+
+					
+			window.desk = null;
+			Promise.all([
+				"/@lib@/commons/registry.js",
+				"/@lib@/commons/io/io.js",
+				"/@back@/core/userSelfForms.js",
+				"/@lib@/core/user.js",
+				"/@back@/core/dialogs/login.js",
+				"https://scenari.cesi.fr/~~static/chain/fr-FR/confAuth.js?202602181909",
+			].map((src) =&gt; import(src))).then(async (modules) =&gt; {
+				let reg = modules[0].REG.reg;
+				let {IO} = modules[1];
+				let {initLoginForm, initRenewPwdForm, initInitPwdForm} = modules[2];
+				let {USER} = modules[3];
+				await modules[5].init(reg);
+
+				reg.installSkin("basis", document);
+				reg.installSkin("form-control-areas", document);
+				//reg.installSkin("webzone:panel", sr);
+				reg.installSkin('c-login', document);
+
+				reg.setPref("lang", 1, "fr-FR");
+
+
+
+				let universe = reg.env.universe;
+				let loginForm = document.getElementById("loginFormRoot");
+				let renewPwdForm = document.getElementById("renewPwdFormRoot");
+				let renewPwdEnd = document.getElementById("renewPwdEnd");
+
+				// Inits UI
+				let embeddedLoginFormContent = reg.getSvc('fullUserLoginMaker')(reg, loginForm);
+
+				let renewPwdFormContent = reg.getSvc('userRenewPwdForm')(reg);
+				renewPwdForm.appendChild(renewPwdFormContent);
+
+				await universe.auth.fetchUser();
+
+				function goto(section) {
+					for (let p = section.previousElementSibling; p; p = p.previousElementSibling) p.hidden = true;
+					for (let p = section.nextElementSibling; p; p = p.nextElementSibling) p.hidden = true;
+					section.hidden = false;
+					return section;
+				}
+
+				function gotoConnected() {
+					const cause = searchParams.get("cause");
+					const url = searchParams.get("r");
+					if (cause!="403" &amp;&amp; IO.isRedirectValid(url, true)) location.href = url;
+					else{
+						if(searchParams.get("cid") === "true") window.parent.postMessage({"cidAuth": "succeeded"}, '*');
+						const user = USER.getPrimaryName(universe.auth.currentUser);
+						document.querySelector("#connected &gt; .userInfo").textContent = `Utilisateur &quot;${user}&quot; : vous êtes connecté·e`
+						document.querySelector("#connected &gt; .actResp").textContent = (cause=="403" &amp;&amp; IO.isRedirectValid(url, true))
+							? `Vos habilitations sont insuffisantes pour accéder à la page : ${url}`
+							: "";
+						document.getElementById("logout").onclick = () =&gt; {
+							const svc = reg.getSvc("actionUserLogout");
+							if(svc &amp;&amp; svc.isVisible(this))
+								svc.execute(this).then(()=&gt;gotoLogin())
+							else
+								gotoLogin()
+						};
+						goto(document.getElementById("connected"));
+					}
+				}
+
+				function gotoLogin() {
+					goto(loginForm);
+					let url = searchParams.get("r");
+					if(url)
+						loginForm.querySelector(".userInfo").textContent = "L&apos;accès à la ressource demandée nécessite une authentification";
+
+					if(embeddedLoginFormContent)
+						initLoginForm(embeddedLoginFormContent, universe.userSelf, universe.auth, {
+							showRenewPwd: () =&gt; goto(renewPwdForm).querySelector('form'),
+							hideRenewPwd: () =&gt; goto(loginForm).querySelector('form'),
+						});
+				}
+
+				universe.auth.listeners.on('loggedUserChanged', (oldUser, newUser) =&gt; {
+					if (!newUser) return;
+					gotoConnected();
+				});
+
+				let searchParams = new URLSearchParams(location.search);
+
+				if (searchParams.has("renew")) {
+					goto(renewPwdForm);
+					const user = USER.getPrimaryName(universe.auth.currentUser);
+					renewPwdForm.querySelector(".userInfo").textContent = `Utilisateur &quot;${user}"`;
+					initRenewPwdForm(renewPwdFormContent, universe.userSelf, universe.auth, {
+						renewPwdDone: () =&gt; goto(loginForm).querySelector('form')
+					});
+				} else if (searchParams.has("updateToken")) {
+					let initPwdForm = document.getElementById("initPwdForm");
+					goto(initPwdForm);
+					initInitPwdForm(initPwdForm, universe.userSelf, universe.auth, {
+						updateToken: searchParams.get("updateToken"),
+						account: searchParams.get("account"),
+						initPwdDone: () =&gt; goto(renewPwdEnd).querySelector('form')
+					});
+				} else if (universe.auth.currentAccount) {
+					gotoConnected(true);
+				} else {
+					gotoLogin();
+				}
+			});
+        }</script><section id="loginFormRoot" hidden=""><h3>CESIEI - Authentification</h3><p class="message userInfo"/></section><section id="renewPwdFormRoot" hidden=""><h3>CESIEI</h3></section><form id="initPwdForm" hidden="" method="post"><section><h3>CESIEI - Initialisation de votre mot de passe</h3><p class="message" hidden=""/><p class="error actResp" hidden=""/><section class="fields"><label for="initAccount">Compte</label><input name="account" id="initAccount"/><label for="initPwd">Nouveau mot de passe</label><input name="newPwd" type="password" id="initPwd" autocomplete="new-password"/><label for="initConfirmPwd">Confirmation du mot de passe</label><input name="confirmPwd" type="password" id="initConfirmPwd"/></section><div class="footer" id="initPwdActions"><button type="submit">Valider</button></div></section></form><section id="connected" hidden=""><h3>CESIEI</h3><p class="message userInfo"/><p class="actResp"/><div class="footer" id="connectedActions"><button id="logout" type="submit">Se déconnecter</button></div></section><section id="renewPwdEnd" hidden=""><h3>CESIEI - Renouvellement de votre mot de passe</h3><p class="message userInfo"/><p class="actResp">Votre mot de passe a bien été initialisé, merci de vous authentifier avec ce dernier</p></section></body></html>
